@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Estate Reserve — Premium Real Estate Platform
 
-## Getting Started
+A highly optimized modern web application built for property listings and management. Featuring a complete public-facing consumer website coupled with a secure Admin Dashboard.
 
-First, run the development server:
+## App Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: Next.js 14+ (App Router)
+- **Styling**: Tailwind CSS + Custom Design System
+- **Animations**: Framer Motion
+- **Database & Auth**: Supabase
+- **Image Storage & Optimization**: Cloudinary
+
+---
+
+## 🛠️ Environment Configuration Setup
+
+To run this application, you must create a `.env.local` file at the root of the project. Include the following variables:
+
+```env
+# ============================================
+# Supabase Configuration
+# ============================================
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# ============================================
+# Cloudinary Configuration
+# ============================================
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# ============================================
+# App Configuration
+# ============================================
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_NAME="Estate Reserve"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ☁️ Cloudinary Setup Guide (Important)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Estate Reserve uses Cloudinary for uploading and managing all property images. Unlike Supabase Storage, Cloudinary automatically handles advanced compression, dynamic cropping, and modern format conversions (like delivering WebP dynamically).
 
-## Learn More
+### 1. Create a Cloudinary Account
+1. Go to [Cloudinary.com](https://cloudinary.com/) and sign up for a free tier account.
+2. Once logged into the Console dashboard, locate your **Product Environment Credentials**.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Copy Your Keys
+You will find three essential values on your Cloudinary Dashboard:
+- **Cloud Name**: (e.g., `dabc1234`)
+- **API Key**: (e.g., `827361928371928`)
+- **API Secret**: (e.g., `xyzABC123_hidden_secret`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Go to your `.env.local` file and paste them into the corresponding variables:
+*   `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
+*   `CLOUDINARY_API_KEY`
+*   `CLOUDINARY_API_SECRET`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Setting Up an Unsigned Upload Preset (Optional but Recommended)
+If the application shifts to client-side uploads at any point, Cloudinary requires an "Upload Preset". Currently, Estate Reserve utilizes a secure **Server-Side Upload API Route** (`/api/upload`) using the API Secret, meaning Presets are completely optional. The keys above are all that is required!
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔒 Supabase Admin Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The project relies heavily on Supabase for data management and Row Level Security (RLS). 
+
+1. Ensure you run the initialization SQL scripts provided in the `supabase/` directory against your project via the Supabase SQL Editor. 
+2. Use the `scripts/create-demo-admin.ts` script to generate a secure admin account if you don't already have one.
+
+---
+
+## 🚀 Running the App
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Run the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the public site or `/admin/login` for the Dashboard.

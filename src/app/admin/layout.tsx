@@ -1,0 +1,21 @@
+/**
+ * Admin Layout
+ * 
+ * Wraps all admin pages with shared sidebar navigation.
+ * Uses AdminShell client component to conditionally hide on login.
+ */
+import type { Metadata } from 'next';
+import AdminShell from '@/components/admin/AdminShell';
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard | Estate Reserve',
+  robots: { index: false, follow: false },
+};
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <AdminShell>{children}</AdminShell>;
+}
