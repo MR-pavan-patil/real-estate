@@ -1,7 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function getRequiredEnv(name: 'NEXT_PUBLIC_SUPABASE_URL' | 'SUPABASE_SERVICE_ROLE_KEY') {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
+
+const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
+const supabaseKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false }
@@ -14,4 +24,7 @@ async function check() {
   if (error) console.error(error);
 }
 
-check();
+check().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

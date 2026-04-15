@@ -1,13 +1,18 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function getRequiredEnv(name: 'NEXT_PUBLIC_SUPABASE_URL' | 'SUPABASE_SERVICE_ROLE_KEY') {
+  const value = process.env[name];
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Error: missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL in .env.local');
-  process.exit(1);
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
 }
+
+const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
+const supabaseKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false }
@@ -47,7 +52,7 @@ async function createDemoAdmin() {
   }
 }
 
-async function linkToAdminsTable(authId, email) {
+async function linkToAdminsTable(authId: string, email: string) {
   // Check if admin record exists
   const { data: existingAdmin } = await supabase.from('admins').select('id').eq('auth_id', authId).single();
   
@@ -71,4 +76,7 @@ async function linkToAdminsTable(authId, email) {
   }
 }
 
-createDemoAdmin();
+createDemoAdmin().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
