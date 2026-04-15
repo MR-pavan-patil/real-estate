@@ -1,0 +1,48 @@
+# ============================================================
+# Supabase Backup Keep-Alive Ping
+# ============================================================
+# Purpose:  Acts as a secondary/backup keep-alive mechanism
+#           to prevent the Supabase free-tier project from
+#           pausing due to inactivity.
+#
+# Primary:  cron-job.org (external cron service)
+# Backup:   This GitHub Actions workflow
+#
+# Schedule: Runs every 4 days at 06:00 UTC
+# Endpoint: GET /api/ping on the production Vercel deployment
+# ============================================================
+
+name: Supabase Backup Keep-Alive Ping
+
+on:
+  # Automatic schedule — every 4 days at 06:00 UTC
+  schedule:
+    - cron: "0 6 */4 * *"
+
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Supabase Keep-Alive Endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Send keep-alive GET request
+        run: |
+          echo "🏓 Pinging Supabase keep-alive endpoint..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 10 \
+            "https://real-estate-alpha-brown-78.vercel.app/api/ping")
+
+          echo "HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Keep-alive ping successful."
+          else
+            echo "❌ Keep-alive ping failed with status $HTTP_STATUS"
+            exit 1
+          fi
