@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const {
       title, slug, description, price, location, address,
       landmark, area_sqft, property_type, status, featured,
       amenities, map_link, images, extra_details,
