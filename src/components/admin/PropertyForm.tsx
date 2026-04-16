@@ -42,6 +42,9 @@ export default function PropertyForm({ initialData, mode }: PropertyFormProps) {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
     initialData?.amenities || []
   );
+  const [extraDetails, setExtraDetails] = useState<Record<string, any>>(
+    initialData?.extra_details || {}
+  );
 
   // Images
   const [images, setImages] = useState<UploadedImage[]>(
@@ -57,6 +60,10 @@ export default function PropertyForm({ initialData, mode }: PropertyFormProps) {
       setSlug(generateSlug(title));
     }
   }, [title, mode]);
+
+  const updateExtraDetail = (key: string, value: any) => {
+    setExtraDetails((prev) => ({ ...prev, [key]: value }));
+  };
 
   function toggleAmenity(amenity: string) {
     setSelectedAmenities((prev) =>
@@ -94,6 +101,7 @@ export default function PropertyForm({ initialData, mode }: PropertyFormProps) {
       featured,
       amenities: selectedAmenities,
       map_link: mapLink.trim() || null,
+      extra_details: extraDetails,
       images: images.map((img, idx) => ({ url: img.url, display_order: idx })),
     };
 
@@ -447,6 +455,117 @@ export default function PropertyForm({ initialData, mode }: PropertyFormProps) {
             );
           })}
         </div>
+      </div>
+
+      {/* Property Specific Details Card */}
+      <div
+        style={{
+          background: 'white',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '1.5rem',
+          marginBottom: '1.25rem',
+        }}
+      >
+        <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
+          Property Specific Details
+        </h3>
+        
+        {propertyType === 'plot' && (
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>Facing Direction</label>
+              <input value={extraDetails.facing_direction || ''} onChange={(e) => updateExtraDetail('facing_direction', e.target.value)} placeholder="e.g. East" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Road Width</label>
+              <input value={extraDetails.road_width || ''} onChange={(e) => updateExtraDetail('road_width', e.target.value)} placeholder="e.g. 40 ft" style={inputStyle} />
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <input type="checkbox" id="plot-corner" checked={extraDetails.corner_plot || false} onChange={(e) => updateExtraDetail('corner_plot', e.target.checked)} className="w-4 h-4 cursor-pointer" />
+              <label htmlFor="plot-corner" className="cursor-pointer mb-0" style={{ ...labelStyle, marginBottom: 0 }}>Corner Plot</label>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <input type="checkbox" id="plot-wall" checked={extraDetails.boundary_wall || false} onChange={(e) => updateExtraDetail('boundary_wall', e.target.checked)} className="w-4 h-4 cursor-pointer" />
+              <label htmlFor="plot-wall" className="cursor-pointer mb-0" style={{ ...labelStyle, marginBottom: 0 }}>Boundary Wall</label>
+            </div>
+          </div>
+        )}
+
+        {['house', 'villa', 'apartment'].includes(propertyType) && (
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>BHK</label>
+              <input value={extraDetails.bhk || ''} onChange={(e) => updateExtraDetail('bhk', e.target.value)} placeholder="e.g. 3" type="number" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Bathrooms</label>
+              <input value={extraDetails.bathrooms || ''} onChange={(e) => updateExtraDetail('bathrooms', e.target.value)} placeholder="e.g. 2" type="number" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Parking</label>
+              <input value={extraDetails.parking || ''} onChange={(e) => updateExtraDetail('parking', e.target.value)} placeholder="e.g. 1 Covered" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Furnishing</label>
+              <input value={extraDetails.furnishing || ''} onChange={(e) => updateExtraDetail('furnishing', e.target.value)} placeholder="e.g. Semi-Furnished" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Floors</label>
+              <input value={extraDetails.floors || ''} onChange={(e) => updateExtraDetail('floors', e.target.value)} placeholder="e.g. 2" type="number" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Property Age</label>
+              <input value={extraDetails.property_age || ''} onChange={(e) => updateExtraDetail('property_age', e.target.value)} placeholder="e.g. 5 Years" style={inputStyle} />
+            </div>
+          </div>
+        )}
+
+        {propertyType === 'farmland' && (
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: '1rem' }}>
+             <div>
+              <label style={labelStyle}>Trees Count</label>
+              <input value={extraDetails.trees_count || ''} onChange={(e) => updateExtraDetail('trees_count', e.target.value)} placeholder="e.g. 150" type="number" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Tree Types</label>
+              <input value={extraDetails.tree_types || ''} onChange={(e) => updateExtraDetail('tree_types', e.target.value)} placeholder="e.g. Mango, Teak" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Water Source</label>
+              <input value={extraDetails.water_source || ''} onChange={(e) => updateExtraDetail('water_source', e.target.value)} placeholder="e.g. Canal" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Fencing</label>
+              <input value={extraDetails.fencing || ''} onChange={(e) => updateExtraDetail('fencing', e.target.value)} placeholder="e.g. Wire Fencing" style={inputStyle} />
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <input type="checkbox" id="farm-borewell" checked={extraDetails.borewell || false} onChange={(e) => updateExtraDetail('borewell', e.target.checked)} className="w-4 h-4 cursor-pointer" />
+              <label htmlFor="farm-borewell" className="cursor-pointer mb-0" style={{ ...labelStyle, marginBottom: 0 }}>Borewell Present</label>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <input type="checkbox" id="farm-electricity" checked={extraDetails.electricity || false} onChange={(e) => updateExtraDetail('electricity', e.target.checked)} className="w-4 h-4 cursor-pointer" />
+              <label htmlFor="farm-electricity" className="cursor-pointer mb-0" style={{ ...labelStyle, marginBottom: 0 }}>Electricity Present</label>
+            </div>
+          </div>
+        )}
+
+        {propertyType === 'commercial' && (
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>Floor Number</label>
+              <input value={extraDetails.floor_number || ''} onChange={(e) => updateExtraDetail('floor_number', e.target.value)} placeholder="e.g. 2nd Floor" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Parking</label>
+              <input value={extraDetails.parking || ''} onChange={(e) => updateExtraDetail('parking', e.target.value)} placeholder="e.g. Shared / 5 slots" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Washrooms</label>
+              <input value={extraDetails.washrooms || ''} onChange={(e) => updateExtraDetail('washrooms', e.target.value)} placeholder="e.g. 2" type="number" style={inputStyle} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Images Card */}

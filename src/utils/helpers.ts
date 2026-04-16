@@ -127,3 +127,43 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 export function cn(...classes: (string | boolean | undefined | null)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+/**
+ * Format dynamic property extra details into a single descriptive string
+ */
+export function getDynamicDetailsString(propertyType: string, details?: Record<string, any>): string | null {
+  if (!details || Object.keys(details).length === 0) return null;
+  
+  if (['house', 'apartment', 'villa'].includes(propertyType)) {
+    return [
+      details.bhk ? `${details.bhk} BHK` : null,
+      details.bathrooms ? `${details.bathrooms} Bath` : null,
+      details.parking ? 'Parking' : null
+    ].filter(Boolean).join(' • ');
+  }
+  
+  if (propertyType === 'farmland') {
+    return [
+      details.trees_count ? `${details.trees_count} Trees` : null,
+      details.borewell ? 'Borewell' : null,
+      details.fencing ? 'Fencing' : null
+    ].filter(Boolean).join(' • ');
+  }
+  
+  if (propertyType === 'plot') {
+    return [
+      details.facing_direction ? `${details.facing_direction} Facing` : null,
+      details.corner_plot ? 'Corner Plot' : null
+    ].filter(Boolean).join(' • ');
+  }
+  
+  if (propertyType === 'commercial') {
+    return [
+      details.floor_number ? `Floor ${details.floor_number}` : null,
+      details.parking ? 'Parking' : null,
+      details.washrooms ? `${details.washrooms} Washrooms` : null
+    ].filter(Boolean).join(' • ');
+  }
+  
+  return null;
+}

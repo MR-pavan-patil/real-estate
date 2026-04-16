@@ -8,11 +8,12 @@
  */
 import type { Metadata } from 'next';
 import HeroSection from './sections/HeroSection';
+import LocationsSection from './sections/LocationsSection';
 import FeaturedGrid from './sections/FeaturedGrid';
 import StatsSection from './sections/StatsSection';
 import AboutSection from './sections/AboutSection';
 import CTASection from './sections/CTASection';
-import { getFeaturedProperties } from '@/services/properties';
+import { getFeaturedProperties, getLocationCounts } from '@/services/properties';
 
 export const metadata: Metadata = {
   title: 'Estate Reserve — Premium Real Estate & Plots',
@@ -24,11 +25,15 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const featuredProperties = await getFeaturedProperties(6);
+  const [featuredProperties, locations] = await Promise.all([
+    getFeaturedProperties(6),
+    getLocationCounts()
+  ]);
 
   return (
     <>
       <HeroSection />
+      <LocationsSection locations={locations} />
       <FeaturedGrid properties={featuredProperties} />
       <StatsSection />
       <AboutSection />

@@ -201,14 +201,32 @@ export default function AdminLoginPage() {
           {/* Demo Login Button */}
           <button
             type="button"
-            onClick={() => {
-              setEmail('demo@estatereserve.com');
-              setPassword('password123');
-              // We dispatch a slight delay to allow state to settle before submission
-              setTimeout(() => {
-                const form = document.getElementById('login-form') as HTMLFormElement;
-                if (form) form.requestSubmit();
-              }, 100);
+            onClick={async () => {
+              setLoading(true);
+              setError('');
+              try {
+                // Auto-provision demo user in DB
+                const res = await fetch('/api/setup-demo', { method: 'POST' });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                  setError(data.error || 'Setup failed');
+                  setLoading(false);
+                  return;
+                }
+
+                setEmail('demo@estatereserve.com');
+                setPassword('password123');
+                
+                // Yield to React to update state, then submit
+                setTimeout(() => {
+                  const form = document.getElementById('login-form') as HTMLFormElement;
+                  if (form) form.requestSubmit();
+                }, 150);
+              } catch (err) {
+                setError('Failed connecting to setup route.');
+                setLoading(false);
+              }
             }}
             disabled={loading}
             className="w-full transition-colors"

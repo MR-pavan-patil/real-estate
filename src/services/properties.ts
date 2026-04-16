@@ -189,3 +189,30 @@ export async function getPropertyCount(): Promise<number> {
   if (error) throw new Error(error.message);
   return count || 0;
 }
+
+/**
+ * Get distinct active locations and their property counts
+ */
+export async function getLocationCounts(): Promise<{ location: string; count: number }[]> {
+  const supabase = await createClient();
+
+  // For a small/medium site, fetching location of all properties is fine
+  const { data, error } = await supabase
+    .from('properties')
+    .select('location')
+    .in('status', ['available', 'upcoming']);
+
+  if (error) throw new Error(error.message);
+
+  const counts: Record<string, number> = {};
+  data.forEach(p => {
+    const loc = p.location?.trim();
+    if (loc) {
+      counts[loc] = (counts[loc] || 0) + 1;
+    }
+  });
+
+  return Object.entries(counts)
+    .map(([location, count]) => ({ location, count }))
+    .sort((a, b) => b.count - a.count);
+}

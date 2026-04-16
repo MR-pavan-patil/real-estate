@@ -142,6 +142,28 @@ export default async function PropertyDetailsPage({ params }: PageProps) {
               </div>
             </div>
 
+            {/* Dynamic Specific Details */}
+            {property.extra_details && Object.keys(property.extra_details).length > 0 && (
+              <div>
+                <h2 style={{ fontSize: 'clamp(1.0625rem, 2vw, 1.25rem)', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>Property Details</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3" style={{ gap: '1rem' }}>
+                  {Object.entries(property.extra_details).map(([key, value]) => {
+                    if (value === null || value === '' || value === undefined) return null;
+                    
+                    const formattedKey = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                    const displayValue = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
+
+                    return (
+                      <div key={key} style={{ padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.25rem' }}>{formattedKey}</p>
+                        <p style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', fontWeight: 500 }}>{displayValue}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Amenities */}
             {property.amenities && property.amenities.length > 0 && (
               <div>

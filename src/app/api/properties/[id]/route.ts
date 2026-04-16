@@ -47,10 +47,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
-    const {
       title, slug, description, price, location, address,
       landmark, area_sqft, property_type, status, featured,
-      amenities, map_link, images,
+      amenities, map_link, images, extra_details,
     } = body;
 
     // Update property
@@ -70,6 +69,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         featured: featured || false,
         amenities: amenities || [],
         map_link: map_link || null,
+        extra_details: extra_details || {},
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

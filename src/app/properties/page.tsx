@@ -6,11 +6,12 @@
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getProperties } from '@/services/properties';
+import { getProperties, getLocationCounts } from '@/services/properties';
 import PropertyFilters from '@/components/public/PropertyFilters';
-import { MapPin, Maximize2 } from 'lucide-react';
-import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel } from '@/utils/helpers';
-import type { PropertyType, PropertyStatus } from '@/types';
+import LocationBrowse from '@/components/public/LocationBrowse';
+import { MapPin, Maximize2, Compass, Map, ArrowRight } from 'lucide-react';
+import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel, getDynamicDetailsString } from '@/utils/helpers';
+import type { PropertyType, PropertyStatus, PropertyWithImages } from '@/types';
 
 export const metadata: Metadata = {
   title: 'All Properties | Estate Reserve',
@@ -26,6 +27,7 @@ interface PageProps {
     search?: string;
     property_type?: string;
     status?: string;
+    location?: string;
     page?: string;
   }>;
 }
@@ -37,12 +39,12 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   const property_type = params.property_type as PropertyType | undefined;
   const status = params.status as PropertyStatus | undefined;
   const search = params.search;
+  const location = params.location;
 
-  const { data: properties, totalPages } = await getProperties(
-    { property_type, status, search },
-    page,
-    12
-  );
+  const [ { data: properties, totalPages }, locations ] = await Promise.all([
+    getProperties({ property_type, status, search, location }, page, 12),
+    getLocationCounts()
+  ]);
 
   return (
     <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh' }}>
@@ -60,6 +62,10 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
       </div>
 
       <div className="container-main" style={{ padding: 'clamp(1.25rem, 4vw, 3rem) var(--container-padding)' }}>
+        
+        {/* Location Browsing Section */}
+        <LocationBrowse locations={locations} />
+
         {/* Filters Top Bar */}
         <PropertyFilters />
 
@@ -81,6 +87,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
               {properties.map((property) => {
                 const statusInfo = getStatusInfo(property.status);
                 const coverImage = property.property_images?.[0]?.image_url || FALLBACK_IMAGE;
+                const dynamicDetailsInfo = getDynamicDetailsString(property.property_type, property.extra_details);
 
                 return (
                   <Link key={property.id} href={`/properties/${property.slug}`} className="block group">
@@ -159,19 +166,52 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
                         >
                           {property.title}
                         </h3>
-                        <div className="flex items-center justify-between gap-2">
+                        {/* Location, Area, Landmark, Facing */}
+                        <div className="grid grid-cols-2 gap-y-2 gap-x-2 mb-3">
                           <div className="flex items-center gap-1.5 truncate min-w-0">
                             <MapPin size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                             <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                               {property.location}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <div className="flex items-center gap-1.5 truncate min-w-0">
                             <Maximize2 size={13} style={{ color: 'var(--text-muted)' }} />
-                            <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                            <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                               {formatArea(property.area_sqft)}
                             </span>
                           </div>
+                          {property.landmark && (
+                            <div className="flex items-center gap-1.5 truncate min-w-0 col-span-2">
+                              <Map size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                              <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                                Landmark: {property.landmark}
+                              </span>
+                            </div>
+                          )}
+                          {dynamicDetailsInfo && (
+                            <div className="flex items-center gap-1.5 truncate min-w-0 col-span-2">
+                              <Compass size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                              <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{dynamicDetailsInfo}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Short Description */}
+                        {property.description && (
+                          <p 
+                            className="text-sm text-gray-500 mb-4 line-clamp-1 truncate"
+                            style={{ fontSize: '0.8125rem' }}
+                          >
+                            {property.description}
+                          </p>
+                        )}
+
+                        {/* View Details Button */}
+                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between group/btn">
+                          <span className="text-sm font-bold text-slate-800">View Details</span>
+                          <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-[var(--primary)] group-hover/btn:text-white transition-colors duration-300">
+                            <ArrowRight size={14} />
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -191,6 +231,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
                   if (search) tempParams.set('search', search);
                   if (property_type) tempParams.set('property_type', property_type);
                   if (status) tempParams.set('status', status);
+                  if (location) tempParams.set('location', location);
                   tempParams.set('page', pNum.toString());
 
                   return (

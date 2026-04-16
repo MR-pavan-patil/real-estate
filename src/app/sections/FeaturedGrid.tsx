@@ -7,10 +7,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { MapPin, Maximize2, ArrowRight } from 'lucide-react';
+import { MapPin, Maximize2, Compass, Map, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { SectionWrapper } from '@/components/ui';
-import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel } from '@/utils/helpers';
+import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel, getDynamicDetailsString } from '@/utils/helpers';
 import type { PropertyWithImages } from '@/types';
 
 // Fallback image if a property somehow has none mapped
@@ -57,6 +57,7 @@ export default function FeaturedGrid({
             const statusInfo = getStatusInfo(property.status);
             // Grab the primary cover image, fallback to placeholder
             const coverImage = property.property_images?.[0]?.image_url || FALLBACK_IMAGE;
+            const dynamicDetailsInfo = getDynamicDetailsString(property.property_type, property.extra_details);
 
             return (
               <motion.div key={property.id} variants={cardVariants}>
@@ -153,31 +154,52 @@ export default function FeaturedGrid({
                         {property.title}
                       </h3>
 
-                      {/* Location & Area */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
+                      {/* Location, Area, Landmark, Facing */}
+                      <div className="grid grid-cols-2 gap-y-2 gap-x-2 mb-3">
+                        <div className="flex items-center gap-1.5 truncate min-w-0">
                           <MapPin size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                          <span
-                            className="truncate"
-                            style={{
-                              fontSize: '0.8125rem',
-                              color: 'var(--text-secondary)',
-                            }}
-                          >
+                          <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                             {property.location}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 truncate min-w-0">
                           <Maximize2 size={13} style={{ color: 'var(--text-muted)' }} />
-                          <span
-                            style={{
-                              fontSize: '0.8125rem',
-                              color: 'var(--text-secondary)',
-                            }}
-                          >
+                          <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                             {formatArea(property.area_sqft)}
                           </span>
                         </div>
+                        {property.landmark && (
+                          <div className="flex items-center gap-1.5 truncate min-w-0 col-span-2">
+                            <Map size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                            <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                              Landmark: {property.landmark}
+                            </span>
+                          </div>
+                        )}
+                        {dynamicDetailsInfo && (
+                          <div className="flex items-center gap-1.5 truncate min-w-0 col-span-2">
+                            <Compass size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                            <span className="truncate" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{dynamicDetailsInfo}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Short Description */}
+                      {property.description && (
+                        <p 
+                          className="text-sm text-gray-500 mb-4 line-clamp-1 truncate"
+                          style={{ fontSize: '0.8125rem' }}
+                        >
+                          {property.description}
+                        </p>
+                      )}
+
+                      {/* View Details Button */}
+                      <div className="pt-3 border-t border-gray-100 flex items-center justify-between group/btn">
+                        <span className="text-sm font-bold text-slate-800">View Details</span>
+                        <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-[var(--primary)] group-hover/btn:text-white transition-colors duration-300">
+                          <ArrowRight size={14} />
+                        </span>
                       </div>
                     </div>
                   </div>

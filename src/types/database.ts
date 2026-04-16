@@ -39,6 +39,7 @@ export interface Property {
   featured: boolean;
   amenities: string[];
   map_link: string | null;
+  extra_details: any; // Dynamic JSON metadata based on property type
   created_at: string;
   updated_at: string;
 }
