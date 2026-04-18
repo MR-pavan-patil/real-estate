@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Maximize2, Compass, Map, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { SectionWrapper } from '@/components/ui';
+import ShareButton from '@/components/public/ShareButton';
 import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel, getDynamicDetailsString } from '@/utils/helpers';
 import type { PropertyWithImages } from '@/types';
 
@@ -67,7 +68,6 @@ export default function FeaturedGrid({
                       borderRadius: 'var(--radius-xl)',
                       background: 'var(--bg-primary)',
                       border: '1px solid var(--border)',
-                      overflow: 'hidden',
                       transition: 'box-shadow 0.3s ease, transform 0.3s ease',
                     }}
                     onMouseEnter={(e) => {
@@ -82,7 +82,11 @@ export default function FeaturedGrid({
                     {/* Image */}
                     <div
                       className="relative overflow-hidden"
-                      style={{ aspectRatio: '4/3' }}
+                      style={{ 
+                        aspectRatio: '4/3',
+                        borderTopLeftRadius: 'calc(var(--radius-xl) - 1px)',
+                        borderTopRightRadius: 'calc(var(--radius-xl) - 1px)'
+                      }}
                     >
                       <img
                         src={coverImage}
@@ -194,12 +198,20 @@ export default function FeaturedGrid({
                         </p>
                       )}
 
-                      {/* View Details Button */}
+                      {/* View Details & Share */}
                       <div className="pt-3 border-t border-gray-100 flex items-center justify-between group/btn">
                         <span className="text-sm font-bold text-slate-800">View Details</span>
-                        <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-[var(--primary)] group-hover/btn:text-white transition-colors duration-300">
-                          <ArrowRight size={14} />
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <ShareButton
+                            propertyTitle={property.title}
+                            propertySlug={property.slug}
+                            propertyPrice={formatPrice(property.price)}
+                            variant="icon"
+                          />
+                          <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-[var(--primary)] group-hover/btn:text-white transition-colors duration-300">
+                            <ArrowRight size={14} />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

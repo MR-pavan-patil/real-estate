@@ -10,6 +10,7 @@ import { getPropertyBySlug } from '@/services/properties';
 import { SectionWrapper } from '@/components/ui';
 import PropertyGallery from '@/components/public/PropertyGallery';
 import InquiryForm from '@/components/public/InquiryForm';
+import ShareButton from '@/components/public/ShareButton';
 import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel } from '@/utils/helpers';
 import { MapPin, Maximize2, Tag, Check, Calendar, Map } from 'lucide-react';
 
@@ -73,13 +74,21 @@ export default async function PropertyDetailsPage({ params }: PageProps) {
             </div>
           </div>
           
-          <div className="flex-shrink-0 md:text-right flex flex-col justify-end bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-1.5">
-              Asking Price
-            </p>
-            <p className="text-primary font-extrabold tracking-tight" style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)' }}>
-              {formatPrice(property.price)}
-            </p>
+          <div className="flex-shrink-0 flex flex-col items-end gap-3">
+            <div className="md:text-right bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-1.5">
+                Asking Price
+              </p>
+              <p className="text-primary font-extrabold tracking-tight" style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)' }}>
+                {formatPrice(property.price)}
+              </p>
+            </div>
+            <ShareButton
+              propertyTitle={property.title}
+              propertySlug={property.slug}
+              propertyPrice={formatPrice(property.price)}
+              variant="button"
+            />
           </div>
         </div>
       </div>

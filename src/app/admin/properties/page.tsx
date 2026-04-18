@@ -17,10 +17,12 @@ import {
   ExternalLink,
   Star,
   Loader2,
+  Download,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { PROPERTY_TYPES, PROPERTY_STATUSES } from '@/utils/constants';
 import { formatPrice, formatDate, getStatusInfo, getPropertyTypeLabel } from '@/utils/helpers';
+import DeleteConfirmModal from '@/components/admin/DeleteConfirmModal';
 
 interface PropertyRow {
   id: string;
@@ -38,7 +40,7 @@ export default function ManagePropertiesPage() {
   const router = useRouter();
   const [properties, setProperties] = useState<PropertyRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -75,18 +77,54 @@ export default function ManagePropertiesPage() {
     return () => clearTimeout(timer);
   }, [fetchProperties, search]);
 
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure? This will permanently delete this property.')) return;
-    setDeleting(id);
-    try {
-      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setProperties((prev) => prev.filter((p) => p.id !== id));
-      }
-    } catch {
-      alert('Failed to delete property.');
+  function handleDeleteClick(id: string, title: string) {
+    setDeleteTarget({ id, title });
+  }
+
+  function handleDeleted(id: string) {
+    setProperties((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  function handleExportCSV() {
+    if (properties.length === 0) return;
+
+    const headers = ['ID', 'Title', 'Slug', 'Price', 'Type', 'Status', 'Featured', 'Created At'];
+    
+    const csvRows = properties.map((p) => {
+      return [
+        `"${p.id}"`,
+        `"${p.title.replace(/"/g, '""')}"`,
+        `"${p.slug}"`,
+        `"${p.price}"`,
+        `"${p.property_type}"`,
+        `"${p.status}"`,
+        `"${p.featured ? 'Yes' : 'No'}"`,
+        `"${new Date(p.created_at).toLocaleString()}"`,
+      ].join(',');
+    });
+
+    const csvString = [headers.map(h => `"${h}"`).join(','), ...csvRows].join('\n');
+    
+    // Add BOM for UTF-8 Support in Excel
+    const blob = new Blob(['\ufeff' + csvString], { type: 'text/csv;charset=utf-8;' });
+    
+    // Fallback for older browsers
+    const nav = window.navigator as any;
+    if (nav.msSaveOrOpenBlob) {
+      nav.msSaveBlob(blob, `properties_export_${Date.now()}.csv`);
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.style.display = 'none';
+      link.download = `properties_${Date.now()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
     }
-    setDeleting(null);
   }
 
   const selectStyle = {
@@ -113,21 +151,54 @@ export default function ManagePropertiesPage() {
             {properties.length} properties found
           </p>
         </div>
-        <Link
-          href="/admin/properties/new"
-          className="flex items-center justify-center gap-2 font-semibold"
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.8125rem',
-            background: 'var(--primary)',
-            color: 'white',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: '0 1px 3px rgba(37, 99, 235, 0.3)',
-          }}
-        >
-          <Plus size={15} />
-          Add Property
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            disabled={properties.length === 0}
+            className="flex items-center justify-center gap-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              padding: '8px 16px',
+              fontSize: '0.8125rem',
+              background: 'white',
+              color: 'var(--text-secondary)',
+              border: '1.5px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              cursor: properties.length === 0 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (properties.length > 0) {
+                e.currentTarget.style.background = 'var(--bg-secondary)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (properties.length > 0) {
+                e.currentTarget.style.background = 'white';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }
+            }}
+          >
+            <Download size={15} />
+            <span className="hidden xs:inline">Export</span>
+          </button>
+          <Link
+            href="/admin/properties/new"
+            className="flex items-center justify-center gap-2 font-semibold"
+            style={{
+              padding: '8px 16px',
+              fontSize: '0.8125rem',
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: '0 1px 3px rgba(37, 99, 235, 0.3)',
+            }}
+          >
+            <Plus size={15} />
+            <span className="hidden xs:inline">Add Property</span>
+            <span className="xs:hidden">Add</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -303,8 +374,7 @@ export default function ManagePropertiesPage() {
                               <Pencil size={14} />
                             </Link>
                             <button
-                              onClick={() => handleDelete(p.id)}
-                              disabled={deleting === p.id}
+                              onClick={() => handleDeleteClick(p.id, p.title)}
                               className="flex items-center justify-center transition-colors"
                               style={{
                                 width: '30px',
@@ -314,11 +384,10 @@ export default function ManagePropertiesPage() {
                                 border: 'none',
                                 background: 'transparent',
                                 cursor: 'pointer',
-                                opacity: deleting === p.id ? 0.5 : 1,
                               }}
                               title="Delete"
                             >
-                              {deleting === p.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </td>
@@ -393,8 +462,7 @@ export default function ManagePropertiesPage() {
                         <Pencil size={14} />
                       </Link>
                       <button
-                        onClick={() => handleDelete(p.id)}
-                        disabled={deleting === p.id}
+                        onClick={() => handleDeleteClick(p.id, p.title)}
                         className="flex items-center justify-center"
                         style={{
                           width: '32px',
@@ -404,10 +472,9 @@ export default function ManagePropertiesPage() {
                           border: 'none',
                           background: 'transparent',
                           cursor: 'pointer',
-                          opacity: deleting === p.id ? 0.5 : 1,
                         }}
                       >
-                        {deleting === p.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
@@ -417,6 +484,14 @@ export default function ManagePropertiesPage() {
           </>
         )}
       </div>
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        propertyId={deleteTarget?.id || ''}
+        propertyTitle={deleteTarget?.title || ''}
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onDeleted={handleDeleted}
+      />
     </div>
   );
 }

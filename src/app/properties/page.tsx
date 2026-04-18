@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { getProperties, getLocationCounts } from '@/services/properties';
 import PropertyFilters from '@/components/public/PropertyFilters';
 import LocationBrowse from '@/components/public/LocationBrowse';
+import ShareButton from '@/components/public/ShareButton';
 import { MapPin, Maximize2, Compass, Map, ArrowRight } from 'lucide-react';
 import { formatPrice, formatArea, getStatusInfo, getPropertyTypeLabel, getDynamicDetailsString } from '@/utils/helpers';
 import type { PropertyType, PropertyStatus, PropertyWithImages } from '@/types';
@@ -97,11 +98,17 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
                         borderRadius: 'var(--radius-xl)',
                         background: 'white',
                         border: '1px solid var(--border)',
-                        overflow: 'hidden',
                       }}
                     >
                       {/* Image */}
-                      <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
+                      <div 
+                        className="relative overflow-hidden" 
+                        style={{ 
+                          aspectRatio: '4/3',
+                          borderTopLeftRadius: 'calc(var(--radius-xl) - 1px)',
+                          borderTopRightRadius: 'calc(var(--radius-xl) - 1px)'
+                        }}
+                      >
                         <img
                           src={coverImage}
                           alt={property.title}
@@ -206,12 +213,20 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
                           </p>
                         )}
 
-                        {/* View Details Button */}
+                        {/* View Details & Share */}
                         <div className="pt-3 border-t border-gray-100 flex items-center justify-between group/btn">
                           <span className="text-sm font-bold text-slate-800">View Details</span>
-                          <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-[var(--primary)] group-hover/btn:text-white transition-colors duration-300">
-                            <ArrowRight size={14} />
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <ShareButton
+                              propertyTitle={property.title}
+                              propertySlug={property.slug}
+                              propertyPrice={formatPrice(property.price)}
+                              variant="icon"
+                            />
+                            <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-[var(--primary)] group-hover/btn:text-white transition-colors duration-300">
+                              <ArrowRight size={14} />
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
