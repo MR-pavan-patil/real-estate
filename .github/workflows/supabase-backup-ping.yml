@@ -36,7 +36,7 @@ jobs:
             --max-time 30 \
             --retry 3 \
             --retry-delay 10 \
-            "https://real-estate-alpha-brown-78.vercel.app/api/ping")
+            "https://real-estate-by-patil-pavan.vercel.app/api/ping")
 
           echo "HTTP Status: $HTTP_STATUS"
 
